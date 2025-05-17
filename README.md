@@ -14,7 +14,7 @@ Academic collaboration to automate post-meeting deliverables:
 
 2. **Model Fine-Tuning**  
    - **Summarization**: instruction-tuned `flan-t5-base` fine-tuned on ~100 transcript→summary examples.  
-   - **Question Answering**: `distilbert-base-uncased` fine-tuned on the exploded QA dataset.
+   - **Question Answering**: fine-tuned `distilbert-base-uncased` and `flan-t5-base`, went with `flan-t5-base` on the exploded QA dataset.
 
 3. **Evaluation & Metrics**  
    - **Summaries**: ROUGE-1/2/L, BERTScore F1, embedding-based relevance.  
@@ -115,7 +115,7 @@ This dataset enabled us to fine-tune two downstream tasks:
 
 4. **Inference Pipeline & Gradio UI**  
    - Load fine-tuned summarizer locally for offline deployment.  
-   - Use OpenAI or your fine-tuned QA model for ad-hoc questions.  
+   - Use fine-tuned QA model for ad-hoc questions.  
    - Simple `gradio.Interface` for copy-paste transcripts and question inputs.
 
 ---
@@ -155,16 +155,54 @@ This dataset enabled us to fine-tune two downstream tasks:
 
 ---
 
-## 📂 Repository Structure
-```
-├── data/
-│ ├── ami_with_gpt35_summaries.pkl # Phase 1 dataset
-│ └── ami_with_summaries_and_qa.pkl # Summary + QA pairs
-├── models/
-│ ├── flan-t5-finetuned/ # Summarization checkpoint
-│ └── distilbert-qa-finetuned/ # QA checkpoint
-├── notebooks/
-│ ├── 01_data_generation.ipynb
-│ ├── 02_summarization_qa_finetune_&_pipeline.ipynb
+## ▶️ How to Run
+
+### 🔧 Prerequisites
+
+- Python 3.8+
+- NVIDIA GPU (recommended for training)
+- Bash terminal (for running shell script blocks)
+
+### 🧩 Step-by-Step
+
+1. **Clone the repo**  
+   ```bash
+   git clone https://github.com/vaishj91/meeting_summary_and_qa/tree/main
+   cd meeting-summarizer-qa
+
+2. **Place your dataset**
+   Make sure the file `ami_gpt35_multitask.jsonl` exists in the project root.
+   This file should be in JSONL format with the following structure per line:
+   ```bash
+   {"input": "<meeting transcript>", "output": "<summary or QA content>"}
+   ```
+
+4. **Run fine-tuning and launch the app**
+   Rename the pipeline script if needed and execute:
+   ```bash
+   mv 03.sh run_pipeline.sh
+   bash run_pipeline.sh
+   ```
+
+4. **Use the Web UI**
+   After training, a Gradio app will launch at:
+   ```bash
+   http://localhost:7860
+   ```
+   You can:
+   - Paste a raw meeting transcript
+   - Ask a custom question about the content (optional)
+   - Receive a summary and either:
+     1. 5 auto-generated QA pairs
+     2. A direct answer to your question
+
+---
+
+## 📁 File Structure
+
+```bash
+├── 01_dataset_generation.ipynb        # Generates synthetic summaries and QA pairs using GPT
+├── 02_training_and_eval.ipynb         # Trains and evaluates
+├── 03_fine-tuning_and_gradio.ipynb    # Fine-tunes model, loads it, and launches Gradio interface [entrypoint]
+├── ami_gpt35_multitask.jsonl          # Serialized multitask dataset (summaries + QA)
 └── README.md
-```
